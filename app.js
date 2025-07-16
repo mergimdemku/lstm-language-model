@@ -1,35 +1,34 @@
 let model;
 const SEQ_LENGTH = 5;
-let tokenizer = null;
+let tokenizerLoaded = false;
 let inputSequence = [];
 let wordIndex = {};
 let indexWord = {};
 
+// Tokenizer laden (jetzt tokenizer_word_index.json)
 async function loadTokenizer() {
   try {
-    const response = await fetch('tokenizer.json');
+    const response = await fetch('tokenizer_word_index.json');
     if (!response.ok) throw new Error('Tokenizer nicht gefunden');
-    const tokenizerJson = await response.json();
+    wordIndex = await response.json();
 
-    // Beispiel: Suche word_index im config-Objekt
-    const wordIndex = tokenizerJson.config && tokenizerJson.config.word_index;
     if (!wordIndex) throw new Error('word_index im Tokenizer fehlt');
 
+    // indexWord umkehren: ID → Wort
     indexWord = {};
     for (const [word, index] of Object.entries(wordIndex)) {
       indexWord[index] = word;
     }
-    tokenizer = true;
+    tokenizerLoaded = true;
   } catch (err) {
     alert('Fehler beim Laden des Tokenizers: ' + err.message);
     console.error(err);
   }
 }
 
-
-
+// Nächstes Wort vorhersagen
 async function predictNextWord() {
-  if (!tokenizer) {
+  if (!tokenizerLoaded) {
     alert('Tokenizer noch nicht geladen!');
     return;
   }
@@ -51,30 +50,35 @@ async function predictNextWord() {
   updateOutput(predictedWord);
 }
 
+// Automatische Vorhersage von 10 Wörtern
 async function predictAuto() {
   for (let i = 0; i < 10; i++) {
     await predictNextWord();
   }
 }
 
+// Ausgabe aktualisieren
 function updateOutput(word) {
   const outputDiv = document.getElementById('output');
   outputDiv.textContent += ' ' + word;
 }
 
+// Reset Funktion
 function reset() {
   inputSequence = [];
   document.getElementById('output').textContent = '';
   document.getElementById('inputText').value = '';
 }
 
+// Eingabetext verarbeiten
 function processInputText(text) {
-  if (!tokenizer) return;
+  if (!tokenizerLoaded) return;
   const words = text.trim().toLowerCase().split(/\s+/);
   inputSequence = words.map(w => wordIndex[w] || 0);
   document.getElementById('output').textContent = text;
 }
 
+// Init
 window.onload = async () => {
   await loadTokenizer();
 
