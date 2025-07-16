@@ -19,39 +19,6 @@ async function loadTokenizer() {
   tokenizer = true; // Dummy, nur um zu zeigen, dass geladen ist
 }
 
-// Modell bauen (Embedding + 2x LSTM + Dense)
-function createModel(vocabSize) {
-  const model = tf.sequential();
-
-  model.add(tf.layers.embedding({
-    inputDim: vocabSize,
-    outputDim: 100,
-    inputLength: SEQ_LENGTH,
-  }));
-
-  model.add(tf.layers.lstm({
-    units: 100,
-    returnSequences: true,
-  }));
-
-  model.add(tf.layers.lstm({
-    units: 100,
-  }));
-
-  model.add(tf.layers.dense({
-    units: vocabSize,
-    activation: 'softmax',
-  }));
-
-  model.compile({
-    optimizer: tf.train.adam(0.01),
-    loss: 'categoricalCrossentropy',
-    metrics: ['accuracy'],
-  });
-
-  return model;
-}
-
 // Vorhersage eines nächsten Worts
 async function predictNextWord() {
   if (!tokenizer) {
@@ -114,10 +81,8 @@ function processInputText(text) {
 window.onload = async () => {
   await loadTokenizer();
 
-  const vocabSize = Object.keys(wordIndex).length + 1;
-  model = createModel(vocabSize);
-
-  // TODO: Modell laden oder trainieren (für jetzt: nur Dummy Modell)
+  // Lade das konvertierte Modell aus dem Ordner web_model
+  model = await tf.loadLayersModel('web_model/model.json');
 
   document.getElementById('predictBtn').onclick = predictNextWord;
   document.getElementById('autoPredictBtn').onclick = predictAuto;
