@@ -11,7 +11,7 @@ async function loadTokenizer() {
     if (!response.ok) throw new Error('Tokenizer nicht gefunden');
     const tokenizerJson = await response.json();
 
-    wordIndex = tokenizerJson['word_index'];
+    const wordIndex = tokenizerJson['word_index'];
     if (!wordIndex) throw new Error('word_index im Tokenizer fehlt');
 
     indexWord = {};
@@ -24,6 +24,7 @@ async function loadTokenizer() {
     console.error(err);
   }
 }
+
 
 async function predictNextWord() {
   if (!tokenizer) {
